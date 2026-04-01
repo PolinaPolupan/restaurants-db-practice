@@ -5,7 +5,7 @@ services:
     ports:
       - "${MONGO_PORT}:27017"
     volumes:
-      - ./mongo-init:/docker-entrypoint-initdb.d
+      - ./database/mongo-init:/docker-entrypoint-initdb.d
       - db:/data/db
       - configdb:/data/configdb
 
@@ -17,7 +17,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pg-data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
+      - ./database/postgres-init:/docker-entrypoint-initdb.d
     ports:
       - "${POSTGRES_PORT}:5432"
 
