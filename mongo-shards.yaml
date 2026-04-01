@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-shard0
+spec:
+  clusterIP: None
+  selector:
+    role: mongo-shard0
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo-shard0
+spec:
+  serviceName: "mongo-shard0"
+  replicas: 1
+  selector:
+    matchLabels:
+      role: mongo-shard0
+  template:
+    metadata:
+      labels:
+        role: mongo-shard0
+    spec:
+      containers:
+      - name: shard0
+        image: mongo:6
+        command:
+          - mongod
+          - "--shardsvr"
+          - "--replSet"
+          - "shard0"
+          - "--bind_ip_all"
+        ports:
+        - containerPort: 27018
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-shard1
+spec:
+  clusterIP: None
+  selector:
+    role: mongo-shard1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo-shard1
+spec:
+  serviceName: "mongo-shard1"
+  replicas: 1
+  selector:
+    matchLabels:
+      role: mongo-shard1
+  template:
+    metadata:
+      labels:
+        role: mongo-shard1
+    spec:
+      containers:
+      - name: shard1
+        image: mongo:6
+        command:
+          - mongod
+          - "--shardsvr"
+          - "--replSet"
+          - "shard1"
+          - "--bind_ip_all"
+        ports:
+        - containerPort: 27018

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Restaurant Management UI</title>
+<style>
+body { font-family: Arial; margin:20px; background:#f5f5f5; color:#333; }
+h1 { text-align:center; color:#2c3e50; }
+input, select, button { margin:5px 0; padding:8px; border:1px solid #ccc; border-radius:4px; }
+button { background:#3498db; color:white; border:none; cursor:pointer; transition:0.2s; }
+button:hover { background:#2980b9; }
+table { border-collapse:collapse; width:90%; margin-top:10px; background:#fff; box-shadow:0 0 5px rgba(0,0,0,0.1); }
+th, td { border:1px solid #ddd; padding:10px; text-align:left; }
+th { background:#3498db; color:white; }
+tr:hover { background:#f1f1f1; }
+.tab { display:none; margin-top:20px; padding:10px; background:#fff; border-radius:6px; box-shadow:0 0 5px rgba(0,0,0,0.1); }
+.tab-buttons button { margin-right:10px; padding:8px 15px; border-radius:4px; }
+.tab-buttons .active { background:#2c3e50 !important; }
+input[type=number] { width:100px; }
+label { margin-right:5px; }
+section { margin-bottom:30px; }
+#login { text-align:center; margin-bottom:20px; }
+</style>
+</head>
+<body>
+
+<h1>Restaurant Management</h1>
+
+<div id="login">
+    <label>Email: <input id="email" placeholder="Email"></label>
+    <label>Password: <input id="password" placeholder="Password" type="password"></label>
+    <button onclick="initDropdowns()">Login</button>
+</div>
+
+<div class="tab-buttons">
+    <button onclick="showTab(event,'employees')" class="active">Employees</button>
+    <button onclick="showTab(event,'products')">Products</button>
+    <button onclick="showTab(event,'cart')">Cart</button>
+</div>
+
+<!-- Employees Tab -->
+<div id="employees" class="tab" style="display:block;">
+    <section>
+        <h2>Manage Employees</h2>
+        <input id="empName" placeholder="Name">
+        <input id="empPosition" placeholder="Position">
+        <input id="empBranch" placeholder="Branch ID">
+        <button onclick="addEmployee()">Add Employee</button>
+        <button onclick="loadEmployees()">Load Employees</button>
+    </section>
+    <table id="employeeTable">
+        <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Branch</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Products Tab -->
+<div id="products" class="tab">
+    <section>
+        <h2>Search Products</h2>
+        <input id="prodName" placeholder="Name keyword">
+        <select id="prodCategory"><option value="">Select Category</option></select>
+        <input id="prodPriceMin" placeholder="Min Price" type="number">
+        <input id="prodPriceMax" placeholder="Max Price" type="number">
+        <button onclick="searchProducts()">Search</button>
+    </section>
+    <section>
+        <h2>Add New Product</h2>
+        <input id="prodAddName" placeholder="Name">
+        <input id="prodAddPrice" placeholder="Price" type="number">
+        <input id="prodAddQty" placeholder="Quantity" type="number">
+        <input id="prodAddManufacturer" placeholder="Manufacturer">
+        <select id="prodAddCategory"><option value="">Select Category</option></select>
+        <button onclick="addProduct()">Add Product</button>
+    </section>
+    <table id="productTable">
+        <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Qty</th><th>Manufacturer</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Cart Tab -->
+<div id="cart" class="tab">
+    <section>
+        <h2>Cart Management</h2>
+        <select id="clientId"><option value="">Select Client</option></select>
+        <input id="cartProdId" placeholder="Product ID">
+        <input id="cartQty" placeholder="Quantity" type="number">
+        <button onclick="addToCart()">Add to Cart</button>
+        <button onclick="loadCart()">Load Cart</button>
+    </section>
+    <table id="cartTable">
+        <thead><tr><th>Product ID</th><th>Name</th><th>Price</th><th>Qty</th></tr></thead>
+        <tbody></tbody>
+    </table>
+    <p>Total: <span id="cartTotal">0</span></p>
+</div>
+
+<script>
+const API = "http://localhost:8000";
+let email='', password='';
+
+function showTab(event,tabId){
+    document.querySelectorAll('.tab').forEach(t=>t.style.display='none');
+    document.getElementById(tabId).style.display='block';
+    document.querySelectorAll('.tab-buttons button').forEach(b=>b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
+
+function initDropdowns(){
+    email=document.getElementById("email").value;
+    password=document.getElementById("password").value;
+    if(!email||!password){alert("Enter email and password"); return;}
+    loadClients();
+    loadCategories();
+}
+
+async function loadClients(){
+    if(!email||!password) return;
+    try{
+        const res=await fetch(`${API}/clients?email=${email}&password=${password}`);
+        const data=await res.json();
+        if(!Array.isArray(data)) throw new Error("Clients not array");
+        const sel=document.getElementById("clientId");
+        sel.innerHTML=""; sel.appendChild(new Option("Select Client",""));
+        data.forEach(c=>sel.appendChild(new Option(`${c.name} (${c.email})`,c.id)));
+    }catch(e){console.error(e); alert("Failed loading clients");}
+}
+
+async function loadCategories(){
+    if(!email||!password) return;
+    try{
+        const res=await fetch(`${API}/categories?email=${email}&password=${password}`);
+        const data=await res.json();
+        if(!Array.isArray(data)) throw new Error("Categories not array");
+        [document.getElementById("prodCategory"),document.getElementById("prodAddCategory")].forEach(sel=>{
+            sel.innerHTML=""; sel.appendChild(new Option("Select Category",""));
+            data.forEach(c=>sel.appendChild(new Option(c.name,c.id)));
+        });
+    }catch(e){console.error(e); alert("Failed loading categories");}
+}
+
+function showTab(event,tabId){
+    document.querySelectorAll('.tab').forEach(t=>t.style.display='none');
+    document.getElementById(tabId).style.display='block';
+    document.querySelectorAll('.tab-buttons button').forEach(b=>b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
+
+function initDropdowns(){
+    email=document.getElementById("email").value;
+    password=document.getElementById("password").value;
+    if(!email||!password){alert("Enter email and password"); return;}
+    loadClients();
+    loadCategories();
+}
+
+// Robust fetch with error handling
+async function fetchJson(url, options={}){
+    const res = await fetch(url, options);
+    if(!res.ok){
+        let errMsg="Request failed";
+        try { const err = await res.json(); errMsg=err.detail||JSON.stringify(err); } catch(e){}
+        throw new Error(errMsg);
+    }
+    return res.json();
+}
+
+// ================== Employees ==================
+async function loadEmployees(){
+    try{
+        const data = await fetchJson(`${API}/employees`);
+        const tbody = document.querySelector("#employeeTable tbody");
+        tbody.innerHTML="";
+        data.forEach(emp=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML=`<td>${emp.id}</td><td>${emp.name}</td><td>${emp.position}</td><td>${emp.branch_id}</td>
+            <td><button onclick="deleteEmployee(${emp.id})">Delete</button></td>`;
+            tbody.appendChild(tr);
+        });
+    }catch(e){console.error(e); alert("Failed loading employees: "+e.message);}
+}
+
+async function addEmployee(){
+    const name = document.getElementById("empName").value;
+    const position = document.getElementById("empPosition").value;
+    const branch = document.getElementById("empBranch").value;
+    if(!name || !position || !branch){alert("Fill all fields"); return;}
+    try{
+        const data = await fetchJson(`${API}/employees`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({name, position, branch_id: parseInt(branch)})
+        });
+        alert(data.msg);
+        loadEmployees();
+    }catch(e){console.error(e); alert("Failed adding employee: "+e.message);}
+}
+
+async function deleteEmployee(id){
+    if(!confirm("Delete this employee?")) return;
+    try{
+        const data = await fetchJson(`${API}/employees/${id}`, {method:"DELETE"});
+        alert(data.msg);
+        loadEmployees();
+    }catch(e){console.error(e); alert("Failed deleting employee: "+e.message);}
+}
+
+// ================== Products ==================
+async function searchProducts(){
+    const keyword = document.getElementById("prodName").value;
+    const category = document.getElementById("prodCategory").value;
+    const priceMin = document.getElementById("prodPriceMin").value;
+    const priceMax = document.getElementById("prodPriceMax").value;
+
+    let url = `${API}/products?email=${email}&password=${password}`;
+    if(category) url += `&category=${category}`;
+    if(keyword) url += `&keyword=${keyword}`;
+    if(priceMin) url += `&price_min=${priceMin}`;
+    if(priceMax) url += `&price_max=${priceMax}`;
+
+    try{
+        const data = await fetchJson(url);
+        if(!Array.isArray(data)) throw new Error("Products not array");
+        const tbody = document.querySelector("#productTable tbody");
+        tbody.innerHTML="";
+        data.forEach(p=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML=`<td>${p.id}</td><td>${p.name}</td><td>${p.price}</td><td>${p.quantity}</td><td>${p.manufacturer}</td>`;
+            tbody.appendChild(tr);
+        });
+    }catch(e){console.error(e); alert("Failed searching products: "+e.message);}
+}
+
+async function addProduct(){
+    const name = document.getElementById("prodAddName").value;
+    const price = document.getElementById("prodAddPrice").value;
+    const qty = document.getElementById("prodAddQty").value;
+    const manufacturer = document.getElementById("prodAddManufacturer").value;
+    const category = document.getElementById("prodAddCategory").value;
+
+    if(!name||!price||!qty||!manufacturer||!category){alert("Fill all fields"); return;}
+    try{
+        const data = await fetchJson(`${API}/products?email=${email}&password=${password}`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({name, price:parseFloat(price), quantity:parseInt(qty), manufacturer, categoryId:category})
+        });
+        alert(data.msg);
+        searchProducts();
+    }catch(e){console.error(e); alert("Failed adding product: "+e.message);}
+}
+
+// ================== Cart ==================
+async function addToCart(){
+    const clientId = document.getElementById("clientId").value;
+    const prodId = document.getElementById("cartProdId").value;
+    const qty = document.getElementById("cartQty").value;
+    if(!clientId||!prodId||!qty){alert("Fill all fields"); return;}
+    try{
+        const data = await fetchJson(`${API}/cart/add?email=${email}&password=${password}&client_id=${clientId}`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({product_id:prodId, quantity:parseInt(qty)})
+        });
+        alert(data.msg);
+        loadCart();
+    }catch(e){console.error(e); alert("Failed adding to cart: "+e.message);}
+}
+
+async function loadCart(){
+    const clientId = document.getElementById("clientId").value;
+    if(!clientId){alert("Select a client"); return;}
+    try{
+        const data = await fetchJson(`${API}/cart/total?email=${email}&password=${password}&client_id=${clientId}`);
+        const tbody = document.querySelector("#cartTable tbody");
+        tbody.innerHTML="";
+        data.items.forEach(item=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML=`<td>${item.product_id}</td><td>${item.name}</td><td>${item.price}</td><td>${item.quantity}</td>`;
+            tbody.appendChild(tr);
+        });
+        document.getElementById("cartTotal").textContent = data.total.toFixed(2);
+    }catch(e){console.error(e); alert("Failed loading cart: "+e.message);}
+}
+</script>
+</body>
+</html>

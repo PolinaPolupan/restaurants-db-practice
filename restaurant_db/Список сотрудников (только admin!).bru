@@ -1,0 +1,16 @@
+meta {
+  name: Список сотрудников (только admin!)
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8000/employees?email=admin@example.com&password=admin
+  body: none
+  auth: none
+}
+
+params:query {
+  email: admin@example.com
+  password: admin
+}

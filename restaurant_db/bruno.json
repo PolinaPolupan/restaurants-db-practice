@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "restaurant_db",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

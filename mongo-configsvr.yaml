@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-configsvr
+spec:
+  clusterIP: None
+  selector:
+    role: mongo-configsvr
+  ports:
+    - port: 27019
+      targetPort: 27019
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo-configsvr
+spec:
+  serviceName: "mongo-configsvr"
+  replicas: 1
+  selector:
+    matchLabels:
+      role: mongo-configsvr
+  template:
+    metadata:
+      labels:
+        role: mongo-configsvr
+    spec:
+      containers:
+      - name: configsvr
+        image: mongo:6
+        command:
+          - mongod
+          - "--configsvr"
+          - "--replSet"
+          - "configrs"
+          - "--bind_ip_all"
+        ports:
+        - containerPort: 27019

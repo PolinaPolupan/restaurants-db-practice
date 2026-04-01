@@ -1,0 +1,18 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: restaurant-db
+  namespace: default
+spec:
+  teamId: "dev"
+  volume:
+    size: 1Gi
+  numberOfInstances: 2
+  users:
+    admin:
+      - superuser
+      - createdb
+  databases:
+    restaurant: admin
+  postgresql:
+    version: "16"

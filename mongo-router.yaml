@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-router
+spec:
+  selector:
+    role: mongo-router
+  ports:
+    - port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: mongo-router
+  template:
+    metadata:
+      labels:
+        role: mongo-router
+    spec:
+      containers:
+      - name: mongos
+        image: mongo:6
+        command:
+          - mongos
+          - "--configdb"
+          - "configrs/mongo-configsvr-0.mongo-configsvr.default.svc.cluster.local:27019"
+          - "--bind_ip_all"
+        ports:
+        - containerPort: 27017
