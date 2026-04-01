@@ -1,0 +1,20 @@
+meta {
+  name: Удалить сотрудника
+  type: http
+  seq: 11
+}
+
+delete {
+  url: http://localhost:8000/employees/:eid?email=admin@example.com&password=admin
+  body: none
+  auth: none
+}
+
+params:query {
+  email: admin@example.com
+  password: admin
+}
+
+params:path {
+  eid: 7
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Посмотреть сумму в корзине
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8000/cart/total?email=user@example.com&password=user&client_id=69cbd5be5fc93f06cec9a6c0
+  body: none
+  auth: none
+}
+
+params:query {
+  email: user@example.com
+  password: user
+  client_id: 69cbd5be5fc93f06cec9a6c0
+}

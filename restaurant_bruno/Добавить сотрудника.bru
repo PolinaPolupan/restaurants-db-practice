@@ -1,0 +1,24 @@
+meta {
+  name: Добавить сотрудника
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://localhost:8000/employees?email=admin@example.com&password=admin
+  body: json
+  auth: none
+}
+
+params:query {
+  email: admin@example.com
+  password: admin
+}
+
+body:json {
+  {
+    "name": "Polina Polupan",
+    "position": "Software Engineer",
+    "branch_id": 3
+  }
+}

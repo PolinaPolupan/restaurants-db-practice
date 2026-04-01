@@ -1,0 +1,20 @@
+meta {
+  name: Удалить товар
+  type: http
+  seq: 9
+}
+
+delete {
+  url: http://localhost:8000/products/:product_id?email=admin@example.com&password=admin
+  body: none
+  auth: none
+}
+
+params:query {
+  email: admin@example.com
+  password: admin
+}
+
+params:path {
+  product_id: 69cbd5bd5fc93f06cec9a6b7
+}

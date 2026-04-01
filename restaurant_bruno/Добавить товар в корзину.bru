@@ -1,0 +1,24 @@
+meta {
+  name: Добавить товар в корзину
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8000/cart/add?email=user@example.com&password=user&client_id=69cbd5be5fc93f06cec9a6c0
+  body: json
+  auth: none
+}
+
+params:query {
+  email: user@example.com
+  password: user
+  client_id: 69cbd5be5fc93f06cec9a6c0
+}
+
+body:json {
+  {
+      "product_id": "69cbd5bd5fc93f06cec9a6b7",
+      "quantity": 2
+  }
+}
